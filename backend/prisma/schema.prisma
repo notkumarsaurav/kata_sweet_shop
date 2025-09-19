@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sweet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String
+  price     Float
+  quantity  Int
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   // In a real app, this will be a hashed password
+  role      String   @default("user") // Can be "user" or "admin"
+}
