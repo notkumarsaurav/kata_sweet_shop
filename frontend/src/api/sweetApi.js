@@ -1,72 +1,64 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 5000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: API_BASE_URL,
+  timeout: 5000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Add request interceptor for error handling
+// 👇 MODIFIED: Add the token to every request
 api.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error)
-);
-
-// Add response interceptor to handle success and error cases
-// On success, it automatically extracts the `data` from the response.
-api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      throw new Error(error.response.data.error || "Request failed");
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error("No response from server");
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      throw new Error(error.message);
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// All functions now use the 'api' instance and are much cleaner.
-// The interceptor handles extracting the '.data' property on success.
+// Your excellent response interceptor for handling errors
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response) {
+      throw new Error(error.response.data.error || "Request failed");
+    } else if (error.request) {
+      throw new Error("No response from server");
+    } else {
+      throw new Error(error.message);
+    }
+  }
+);
 
-export const getSweets = async () => {
-  return api.get("/sweets");
-};
+// --- Sweet API Functions ---
 
-export const getSweetById = async (id) => {
-  return api.get(`/sweets/${id}`);
-};
+export const getSweets = () => api.get("/sweets");
 
-export const addSweet = async (sweetData) => {
-  return api.post("/sweets", sweetData);
-};
+export const getSweetById = (id) => api.get(`/sweets/${id}`);
 
-export const updateSweet = async (id, sweetData) => {
-  return api.put(`/sweets/${id}`, sweetData);
-};
+export const addSweet = (sweetData) => api.post("/sweets", sweetData);
 
-export const deleteSweet = async (id) => {
-  return api.delete(`/sweets/${id}`);
-};
+export const updateSweet = (id, sweetData) => api.put(`/sweets/${id}`, sweetData);
 
-export const purchaseSweet = async (id, quantity) => {
-  return api.post(`/sweets/${id}/purchase`, { quantity });
-};
+export const deleteSweet = (id) => api.delete(`/sweets/${id}`);
 
-export const restockSweet = async (id, quantity) => {
-  return api.post(`/sweets/${id}/restock`, { quantity });
-};
+export const purchaseSweet = (id, quantity) => api.post(`/sweets/${id}/purchase`, { quantity });
 
-export const searchSweets = async (params) => {
-  return api.get("/sweets/search", { params });
-};
+export const restockSweet = (id, quantity) => api.post(`/sweets/${id}/restock`, { quantity });
+
+export const searchSweets = (params) => api.get("/sweets/search", { params });
+
+
+// --- Auth API Functions ---
+
+// 👇 ADDED: Functions for user authentication
+export const registerUser = (userData) => api.post('/auth/register', userData);
+
+export const loginUser = (credentials) => api.post('/auth/login', credentials);
