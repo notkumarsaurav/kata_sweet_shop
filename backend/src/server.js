@@ -7,7 +7,7 @@ import { protect, admin } from './middleware/authMiddleware.js';
 export const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({ origin: ["http://localhost:5173", "http://localhost:5174"] }));
+app.use(cors({ origin: ["http://localhost:5173", "http://localhost:5174","https://YOUR_FRONTEND_URL.vercel.app"] }));
 app.use(express.json());
 
 const sweetService = new SweetService();
